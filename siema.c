@@ -229,3 +229,19 @@ for (sl_node_t *c = mailbox.head, *nx; c; c = nx) {
 mailbox.head = NULL; mailbox.count = 0;
 pthread_mutex_unlock(&mailbox.mtx);
 // albo po prostu sl_clear jesli nie masz sema
+
+
+
+//pisanie do netcata
+// netcat -u -l 9000
+// robisz socket bez bind i sendto na adres netcata
+hello\n", 6, 0, (struct sockaddr*)&
+int fd = socket(AF_INET, SOCK_DGRAM, 0);
+
+struct sockaddr_in dst = {
+    .sin_family      = AF_INET,
+    .sin_port        = htons(9000),
+    .sin_addr.s_addr = inet_addr("127.0.0.1")
+};
+
+sendto(fd, "hello\n", 6, 0, (struct sockaddr*)&dst, sizeof(dst));
