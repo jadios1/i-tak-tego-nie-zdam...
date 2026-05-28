@@ -181,3 +181,51 @@ int main(int argc, char *argv[]) {
     close(fd);
     return 0;
 }
+
+
+
+
+
+//POMOC DO LINKED LISTS JEZELI BEDA :(
+
+// zamiast int data, twoj typ:
+typedef struct {
+    char sender[32];
+    char contents[64];
+    int  priority;
+} parcel_t;
+
+typedef struct sl_node {
+    int        priority;
+    parcel_t   data;      // <-- twoj typ tutaj
+    struct sl_node *next;
+} sl_node_t;
+
+sl_t mailbox;
+sl_init(&mailbox);
+
+// wstawiasz paczke
+parcel_t p = { .sender = "alice", .contents = "hello", .priority = 2 };
+sl_insert(&mailbox, 2, p);  // wchodzi za wszystkimi z priority <= 2
+
+parcel_t p2 = { .sender = "bob", .contents = "urgent", .priority = 1 };
+sl_insert(&mailbox, 1, p2); // wchodzi na head bo priority 1 < 2
+
+
+
+// pobierasz najwazniejsza (head)
+parcel_t out;
+sl_pop(&mailbox, &out);  // dostaniesz boba, priority 1
+
+
+
+// jesli masz sem jako token bucket
+pthread_mutex_lock(&mailbox.mtx);
+for (sl_node_t *c = mailbox.head, *nx; c; c = nx) {
+    nx = c->next;
+    sem_post(&sem);   // oddaj token za kazda paczke
+    free(c);
+}
+mailbox.head = NULL; mailbox.count = 0;
+pthread_mutex_unlock(&mailbox.mtx);
+// albo po prostu sl_clear jesli nie masz sema
